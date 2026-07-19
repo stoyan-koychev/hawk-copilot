@@ -11,7 +11,7 @@
 
 import { appendFileSync } from "node:fs";
 import path from "node:path";
-import type { Settings } from "../config.js";
+import { ensureHome, type Settings } from "../config.js";
 import type { LoopEvent, Observer } from "../types.js";
 
 /** Local calendar date as YYYY-MM-DD. (toISOString() is UTC and would stamp
@@ -34,11 +34,11 @@ export type Tracer = {
 
 export const makeTracer = (settings: Settings): Tracer => {
   const tracePath = path.join(
-    settings.home,
+    ensureHome(settings.home),
     "traces",
     `${localDateISO()}.jsonl`,
   );
-  const usagePath = path.join(settings.home, "usage.jsonl");
+  const usagePath = path.join(ensureHome(settings.home), "usage.jsonl");
 
   const write = (record: Record<string, unknown>): void => {
     appendFileSync(

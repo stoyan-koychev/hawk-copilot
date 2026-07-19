@@ -58,6 +58,15 @@ const int = (name: string, fallback: number): number => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const defaultHome = (): string => {
+  // import.meta.dirname exists under real Node ESM (tsx, node) but is
+  // undefined inside bundlers (webpack/Next) — there, HAWK_HOME must be set.
+  const dir: string | undefined = import.meta.dirname;
+  return dir
+    ? path.resolve(dir, "../.hawk")
+    : path.resolve(process.cwd(), ".hawk");
+};
+
 export const loadSettings = (overrides: Partial<Settings> = {}): Settings =>
   Object.freeze({
     provider: process.env.HAWK_PROVIDER ?? "openai",
@@ -65,7 +74,7 @@ export const loadSettings = (overrides: Partial<Settings> = {}): Settings =>
     baseUrl: process.env.HAWK_BASE_URL || null,
     model: process.env.HAWK_MODEL ?? "",
     smallModel: process.env.HAWK_SMALL_MODEL ?? "",
-    home: process.env.HAWK_HOME ?? ".hawk",
+    home: process.env.HAWK_HOME ?? defaultHome(),
     maxIterations: int("HAWK_MAX_ITERATIONS", 10),
     maxTokens: int("HAWK_MAX_TOKENS", 8192),
     historyTurns: int("HAWK_HISTORY_TURNS", 12),

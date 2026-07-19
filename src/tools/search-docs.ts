@@ -1,9 +1,9 @@
 /**
- * search_docs â the agent's window into the Payhawk knowledge base.
+ * search_docs - the agent's window into the Payhawk knowledge base.
  *
  * Formats hybrid-retrieval results as a NUMBERED list: the numbers become
  * the citation vocabulary ("...request a refund [1]"), resolvable back to
- * URLs â grounded answers made mechanical.
+ * URLs - grounded answers made mechanical.
  */
 
 import type { DbPool } from "../retrieval/db.js";
@@ -17,7 +17,7 @@ export const makeSearchDocsTool = (pool: DbPool, apiKey: string): Tool => ({
   description:
     "Search Payhawk's official documentation (help center and product docs) and get back " +
     "the most relevant passages with their source URLs. Use for ANY question about Payhawk " +
-    "features, cards, expenses, reimbursements, approvals, billing, or integrations â " +
+    "features, cards, expenses, reimbursements, approvals, billing, or integrations " +
     "always search before answering from memory.",
   inputSchema: {
     type: "object",
@@ -25,7 +25,7 @@ export const makeSearchDocsTool = (pool: DbPool, apiKey: string): Tool => ({
       query: {
         type: "string",
         description:
-          "what to look up in the Payhawk knowledge base â use the user's own words",
+          "what to look up in the Payhawk knowledge base - include every distinguishing detail from the user's message in the query - especially contradictions or surprising conditions (e.g. 'declined despite sufficient balance')",
       },
     },
     required: ["query"],

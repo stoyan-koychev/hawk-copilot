@@ -1,10 +1,10 @@
-// LLM-AS-JUDGE EVAL â does the agent tell the truth from what it retrieved?
+// LLM-AS-JUDGE EVAL - does the agent tell the truth from what it retrieved?
 //
-//   Faithfulness  â every claim supported by the passages (no invented behavior)
-//   Groundedness  â the answer is built FROM the passages and cites them
+//   Faithfulness  - every claim supported by the passages (no invented behavior)
+//   Groundedness  - the answer is built FROM the passages and cites them
 //
 // Scored 0-10 by the small model against a rubric, thresholded at 0.6.
-// Costs real API calls â gated on HAS_KEY, never part of `pnpm test`.
+// Costs real API calls - gated on HAS_KEY, never part of `pnpm test`.
 
 import { describe, expect, it } from "vitest";
 import { makeAgent } from "../../src/agent.js";

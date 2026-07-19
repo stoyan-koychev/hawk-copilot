@@ -23,7 +23,10 @@ Rules:
 
 export type Agent = {
   readonly client: LlmClient;
-  readonly ask: (question: string, observer?: Observer) => Promise<LoopResult>;
+  readonly ask: (
+    question: string,
+    opts?: { observer?: Observer; history?: Message[]; stream?: boolean },
+  ) => Promise<LoopResult>;
   readonly end: () => Promise<void>;
 };
 
@@ -37,10 +40,14 @@ export const makeAgent = (settings: Settings): Agent => {
   return Object.freeze({
     client,
 
-    ask: (question, observer) => {
-      // fresh array per call — runLoop mutates it, and each question is its
-      // own turn (no conversation memory yet, by design)
-      const messages: Message[] = [{ role: "user", content: question }];
+    ask: (question, opts = {}) => {
+      // chat state lives with the CALLER (browser); the agent stays stateless.
+      // Window the incoming history so context/cost stay flat on long chats.
+      const window = settings.historyTurns * 2;
+      const messages: Message[] = [
+        ...(opts.history ?? []).slice(-window),
+        { role: "user", content: question },
+      ];
       return runLoop({
         client,
         model: settings.model,
@@ -49,7 +56,8 @@ export const makeAgent = (settings: Settings): Agent => {
         tools,
         maxIterations: settings.maxIterations,
         maxTokens: settings.maxTokens,
-        observer,
+        observer: opts.observer,
+        stream: opts.stream,
       });
     },
 
