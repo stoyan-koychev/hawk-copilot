@@ -1,0 +1,35 @@
+{
+  "name": "hawk-copilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hawk Copilot is a chatbot that uses the OpenAI API to answer questions and help with tasks.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.57.0",
+    "better-sqlite3": "^11.10.0",
+    "openai": "^4.104.0"
+  },
+  "scripts": {
+    "chat": "tsx src/main.ts",
+    "test": "vitest run evals/deterministic",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src evals",
+    "format": "biome format --write src evals"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.15.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ]
+  }
+}
