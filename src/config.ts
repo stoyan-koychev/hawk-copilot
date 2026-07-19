@@ -48,6 +48,8 @@ export type Settings = {
 
   // --- Reliability (HAWK_LLM_TIMEOUT is seconds in .env; stored as ms here)
   readonly llmTimeoutMs: number;
+  // --- Org knowledge base (Supabase Postgres + pgvector); empty = retrieval unavailable
+  readonly databaseUrl: string;
 };
 
 const int = (name: string, fallback: number): number => {
@@ -70,6 +72,7 @@ export const loadSettings = (overrides: Partial<Settings> = {}): Settings =>
     consolidateEvery: int("HAWK_CONSOLIDATE_EVERY", 6),
     retrievalTopK: int("HAWK_RETRIEVAL_TOP_K", 4),
     llmTimeoutMs: int("HAWK_LLM_TIMEOUT", 120) * 1000,
+    databaseUrl: process.env.DATABASE_URL ?? "",
     ...overrides,
   });
 

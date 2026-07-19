@@ -1,23 +1,23 @@
 /**
- * Throwaway smoke test — one live turn through the loop.
- * Replaced by the real CLI gateway in Phase 4.
+ * Throwaway smoke test â one grounded turn through the loop.
+ * Replaced by a real CLI gateway later.
  */
 
 import { loadSettings } from "./config.js";
 import { runLoop } from "./loop/agent.js";
 import { getClient, resolveSettings } from "./loop/client.js";
+import { makePool } from "./retrieval/db.js";
 import { makeRegistry } from "./tools/registry.js";
-import type { Tool } from "./tools/registry.js";
+import { makeSearchDocsTool } from "./tools/search-docs.js";
 import type { Message } from "./types.js";
 
-const getTime: Tool = {
-  name: "get_time",
-  description:
-    "Get the current date and time on the user's machine. " +
-    "Use whenever the user asks what time or day it is.",
-  inputSchema: { type: "object", properties: {}, required: [] },
-  run: () => new Date().toString(),
-};
+const SYSTEM = `You are Hawk Copilot, an assistant for Payhawk users, grounded in Payhawk's official documentation.
+
+Rules:
+- For any question about Payhawk (features, cards, expenses, reimbursements, approvals, billing, integrations), ALWAYS call search_docs first â never answer from memory.
+- Answer ONLY from the returned passages. Cite sources inline as [1], [2] matching the passage numbers, and list the cited URLs at the end under "Sources:".
+- If the passages don't answer the question, say so plainly and suggest contacting Payhawk support â never invent product behavior.
+- Be concise and practical: steps first, caveats after.`;
 
 const main = async (): Promise<void> => {
   let settings: ReturnType<typeof loadSettings>;
@@ -29,23 +29,32 @@ const main = async (): Promise<void> => {
   }
 
   const client = getClient(settings);
-  const tools = makeRegistry([getTime]);
-  const messages: Message[] = [
-    { role: "user", content: "what time is it right now?" },
-  ];
+  const pool = makePool(settings.databaseUrl);
+  const tools = makeRegistry([makeSearchDocsTool(pool, settings.apiKey)]);
+
+  const question =
+    process.argv[2] ??
+    "How do I get reimbursed for a lunch I paid for with my own money?";
+  const messages: Message[] = [{ role: "user", content: question }];
 
   const result = await runLoop({
     client,
     model: settings.model,
-    system: "You are a helpful assistant.",
+    system: SYSTEM,
     messages,
     tools,
+    maxIterations: settings.maxIterations,
     maxTokens: settings.maxTokens,
   });
 
-  console.log("tool calls:", result.toolCalls);
+  console.log(
+    "tool calls:",
+    result.toolCalls.map((c) => `${c.tool}(${JSON.stringify(c.args)})`),
+  );
   console.log("iterations:", result.iterations);
-  console.log("reply:", result.reply);
+  console.log(`\n${result.reply}`);
+
+  await pool.end();
 };
 
 main();
