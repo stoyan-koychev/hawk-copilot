@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.57.0",
+    "ab": "^1.0.0",
     "better-sqlite3": "^11.10.0",
     "openai": "^4.104.0",
     "pg": "^8.22.0"
@@ -18,7 +19,8 @@
     "test": "vitest run evals/deterministic",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src evals",
-    "format": "biome format --write src evals"
+    "format": "biome format --write src evals",
+    "ab": "tsx src/ops/ab.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

@@ -31,9 +31,9 @@ export const sparseSearch = async (
 ): Promise<ScoredChunk[]> => {
   const { rows } = await pool.query(
     `SELECT ${CHUNK_COLUMNS},
-            ts_rank_cd(c.tsv, plainto_tsquery('english', $1)) AS score
+            ts_rank_cd(c.tsv, websearch_to_tsquery('english', $1)) AS score
      FROM chunks c JOIN documents d ON d.id = c.document_id
-     WHERE c.tsv @@ plainto_tsquery('english', $1)
+     WHERE c.tsv @@ websearch_to_tsquery('english', $1)
      ORDER BY score DESC LIMIT $2`,
     [query, k],
   );
