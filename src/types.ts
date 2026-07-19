@@ -58,10 +58,7 @@ export type CreateParams = {
  */
 export type LlmClient = {
   readonly create: (params: CreateParams) => Promise<LlmResponse>;
-  readonly stream?: (
-    params: CreateParams,
-    onText: (delta: string) => void,
-  ) => Promise<LlmResponse>;
+  readonly stream?: (params: CreateParams, onText: (delta: string) => void) => Promise<LlmResponse>;
 };
 
 export type LoopEvent = Record<string, unknown>;

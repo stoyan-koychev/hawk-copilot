@@ -6,14 +6,9 @@
 import process from "node:process";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Settings } from "../config.js";
-import type {
-  ContentBlock,
-  CreateParams,
-  LlmClient,
-  LlmResponse,
-} from "../types.js";
-import { PROVIDERS } from "./providers.js";
+import type { ContentBlock, CreateParams, LlmClient, LlmResponse } from "../types.js";
 import { makeOpenAICompatClient } from "./openai-compat.js";
+import { PROVIDERS } from "./providers.js";
 
 /** Fill default model ids and the API key from the provider table. Throws on
  * unknown provider or missing key (callers exit with the message). */
@@ -74,9 +69,7 @@ const makeAnthropicClient = (options: {
     timeout: options.timeoutMs,
   });
 
-  const request = (
-    p: CreateParams,
-  ): Anthropic.MessageCreateParamsNonStreaming => ({
+  const request = (p: CreateParams): Anthropic.MessageCreateParamsNonStreaming => ({
     model: p.model,
     system: p.system,
     messages: p.messages as unknown as Anthropic.MessageParam[],
@@ -85,8 +78,7 @@ const makeAnthropicClient = (options: {
   });
 
   return Object.freeze({
-    create: async (p: CreateParams) =>
-      toLlmResponse(await client.messages.create(request(p))),
+    create: async (p: CreateParams) => toLlmResponse(await client.messages.create(request(p))),
     stream: async (p: CreateParams, onText: (delta: string) => void) => {
       const s = client.messages.stream(request(p));
       s.on("text", onText);

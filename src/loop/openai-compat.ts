@@ -5,13 +5,7 @@
  */
 
 import OpenAI from "openai";
-import type {
-  ContentBlock,
-  CreateParams,
-  LlmClient,
-  LlmResponse,
-  ToolUseBlock,
-} from "../types.js";
+import type { ContentBlock, CreateParams, LlmClient, LlmResponse, ToolUseBlock } from "../types.js";
 
 type OaiMessage = Record<string, unknown>;
 type OaiRequest = {
@@ -36,10 +30,7 @@ export const toOpenAI = (params: CreateParams): OaiRequest => {
     } else if (message.role === "assistant") {
       // anthropic content blocks → assistant text + tool_calls
       const text = content
-        .filter(
-          (b): b is Extract<ContentBlock, { type: "text" }> =>
-            b.type === "text",
-        )
+        .filter((b): b is Extract<ContentBlock, { type: "text" }> => b.type === "text")
         .map((b) => b.text)
         .join("");
       const calls: Record<string, unknown>[] = [];
@@ -117,10 +108,7 @@ export const makeOpenAICompatClient = (options: {
    * (older OpenAI-compatible endpoints only know max_tokens, not the newer
    * max_completion_tokens). Only retry when the error is ABOUT that param —
    * retrying on any error masks the real failure. */
-  const call = async (
-    request: OaiRequest,
-    extra: Record<string, unknown> = {},
-  ): Promise<any> => {
+  const call = async (request: OaiRequest, extra: Record<string, unknown> = {}): Promise<any> => {
     try {
       return await client.chat.completions.create({
         ...request,
@@ -128,8 +116,7 @@ export const makeOpenAICompatClient = (options: {
       } as any);
     } catch (exc) {
       const m = String(exc).toLowerCase();
-      if (!m.includes("max_completion_tokens") && !m.includes("max_tokens"))
-        throw exc;
+      if (!m.includes("max_completion_tokens") && !m.includes("max_tokens")) throw exc;
       const retry: OaiRequest = {
         ...request,
         max_tokens: request.max_completion_tokens,
@@ -147,9 +134,7 @@ export const makeOpenAICompatClient = (options: {
     if (!response.choices?.length) {
       // some OpenAI-compatible endpoints (e.g. OpenRouter on a rate limit)
       // return 200 with an error body and no choices: surface that message
-      const errBody =
-        (response as Record<string, unknown>).error ??
-        "endpoint returned no choices";
+      const errBody = (response as Record<string, unknown>).error ?? "endpoint returned no choices";
       throw new Error(`${params.model}: ${JSON.stringify(errBody)}`);
     }
     const choice = response.choices[0].message;
@@ -178,13 +163,8 @@ export const makeOpenAICompatClient = (options: {
       stream_options: { include_usage: true },
     });
     const text: string[] = [];
-    const tools = new Map<
-      number,
-      { id: string; name: string; args: string; extra?: unknown }
-    >();
-    let usage:
-      | { prompt_tokens?: number; completion_tokens?: number }
-      | undefined;
+    const tools = new Map<number, { id: string; name: string; args: string; extra?: unknown }>();
+    let usage: { prompt_tokens?: number; completion_tokens?: number } | undefined;
 
     for await (const chunk of s) {
       if (chunk.usage) usage = chunk.usage;

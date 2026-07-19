@@ -32,10 +32,7 @@ export const toolBlock = (
   callId = "tu_1",
 ): ToolUseBlock => ({ type: "tool_use", id: callId, name, input: args });
 
-export const response = (
-  blocks: ContentBlock[],
-  stopReason = "end_turn",
-): LlmResponse => ({
+export const response = (blocks: ContentBlock[], stopReason = "end_turn"): LlmResponse => ({
   stopReason,
   usage: { input: 0, output: 0 },
   content: blocks,

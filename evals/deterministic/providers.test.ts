@@ -2,18 +2,13 @@
 // as a pure function (no network).
 
 import { describe, expect, it } from "vitest";
-import { defaultPair, PROVIDERS } from "../../src/loop/providers.js";
 import { toOpenAI } from "../../src/loop/openai-compat.js";
+import { PROVIDERS, defaultPair } from "../../src/loop/providers.js";
 import type { Message } from "../../src/types.js";
 
 describe("PROVIDERS", () => {
   it("has all four providers with a wire kind, key env, and default models", () => {
-    expect(Object.keys(PROVIDERS).sort()).toEqual([
-      "anthropic",
-      "gemini",
-      "openai",
-      "openrouter",
-    ]);
+    expect(Object.keys(PROVIDERS).sort()).toEqual(["anthropic", "gemini", "openai", "openrouter"]);
     for (const [name, p] of Object.entries(PROVIDERS)) {
       expect(["anthropic", "openai"], name).toContain(p.kind);
       expect(p.keyEnv, name).toMatch(/_API_KEY$/);
@@ -24,10 +19,7 @@ describe("PROVIDERS", () => {
 
   it("defaultPair dedupes flagship/fast with model fallbacks", () => {
     expect(defaultPair(PROVIDERS.openai!)).toEqual(["gpt-4.1-mini"]);
-    expect(defaultPair(PROVIDERS.anthropic!)).toEqual([
-      "claude-opus-4-8",
-      "claude-sonnet-5",
-    ]);
+    expect(defaultPair(PROVIDERS.anthropic!)).toEqual(["claude-opus-4-8", "claude-sonnet-5"]);
   });
 });
 
@@ -66,9 +58,7 @@ describe("toOpenAI (the wire-format bridge)", () => {
       },
       {
         role: "user",
-        content: [
-          { type: "tool_result", tool_use_id: "tu_9", content: "done" },
-        ],
+        content: [{ type: "tool_result", tool_use_id: "tu_9", content: "done" }],
       },
     ];
     const request = toOpenAI({ model: "m", messages, maxTokens: 50 });
@@ -106,9 +96,7 @@ describe("toOpenAI (the wire-format bridge)", () => {
       },
     ];
     const request = toOpenAI({ model: "m", messages, maxTokens: 10 });
-    const call = (
-      request.messages[0] as { tool_calls: Record<string, unknown>[] }
-    ).tool_calls[0];
+    const call = (request.messages[0] as { tool_calls: Record<string, unknown>[] }).tool_calls[0];
     expect(call?.extra_content).toEqual({ sig: "abc" });
   });
 
@@ -116,9 +104,7 @@ describe("toOpenAI (the wire-format bridge)", () => {
     const request = toOpenAI({
       model: "m",
       messages: [{ role: "user", content: "q" }],
-      tools: [
-        { name: "t", description: "d", input_schema: { type: "object" } },
-      ],
+      tools: [{ name: "t", description: "d", input_schema: { type: "object" } }],
       maxTokens: 10,
     });
     expect(request.tools).toEqual([
