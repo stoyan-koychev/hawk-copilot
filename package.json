@@ -21,7 +21,8 @@
     "lint": "biome check src evals",
     "format": "biome format --write src evals",
     "ab": "tsx src/ops/ab.ts",
-    "eval:judge": "vitest run evals/judge"
+    "eval:judge": "vitest run evals/judge",
+    "gate": "tsx src/ops/release-gate.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

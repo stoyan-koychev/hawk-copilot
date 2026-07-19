@@ -15,8 +15,10 @@ import { embedQuery } from "../retrieval/embed.js";
 import { denseSearch, rrf, sparseSearch } from "../retrieval/search.js";
 import type { ScoredChunk } from "../retrieval/search.js";
 import { loadRagCases, mrr, recallAtK } from "./rag-metrics.js";
+import { configVersion } from "./version.js";
+import { RETRIEVAL_CONFIG } from "../retrieval/config.js";
 
-const K = 8;
+const K = RETRIEVAL_CONFIG.abK;
 const MODES = ["sparse", "dense", "hybrid"] as const;
 type Mode = (typeof MODES)[number];
 
@@ -51,7 +53,7 @@ const main = async (): Promise<void> => {
     const results: Record<Mode, ScoredChunk[]> = {
       sparse: sparse.slice(0, K),
       dense: dense.slice(0, K),
-      hybrid: rrf([sparse, dense], K),
+      hybrid: rrf([sparse, dense], K, RETRIEVAL_CONFIG.rrfK),
     };
     for (const mode of MODES) {
       const r = recallAtK(c.expect_url, results[mode], K);
@@ -69,7 +71,7 @@ const main = async (): Promise<void> => {
       ? `recall ${(s.recall / s.n).toFixed(2)}  mrr ${(s.mrr / s.n).toFixed(2)}`
       : "—";
   const buckets = ["overall", "jargon", "paraphrase", "mixed"];
-  console.log(`\n${cases.length} cases, k=${K}\n`);
+  console.log(`\n${cases.length} cases, k=${K}, config ${configVersion()}\n`);
   console.log(`${"".padEnd(12)}${MODES.map((m) => m.padEnd(24)).join("")}`);
   for (const b of buckets) {
     const row = MODES.map((m) => fmt(scores.get(m)!.get(b)).padEnd(24)).join(
