@@ -1,22 +1,29 @@
-/** CLI entry: one grounded question per invocation. */
+/** CLI entry: one grounded question per invocation, fully traced. */
 
 import { makeAgent } from "./agent.js";
 import { loadSettings } from "./config.js";
 import { resolveSettings } from "./loop/client.js";
+import { makeTracer } from "./ops/tracing.js";
 
 const main = async (): Promise<void> => {
   let agent: ReturnType<typeof makeAgent>;
+  let settings: ReturnType<typeof loadSettings>;
   try {
-    agent = makeAgent(resolveSettings(loadSettings()));
+    settings = resolveSettings(loadSettings());
+    agent = makeAgent(settings);
   } catch (exc) {
     console.error(exc instanceof Error ? exc.message : String(exc));
     process.exit(1);
   }
 
+  const tracer = makeTracer(settings);
   const question =
     process.argv[2] ??
     "How do I get reimbursed for a lunch I paid for with my own money?";
-  const result = await agent.ask(question);
+
+  tracer.turnStart(question);
+  const result = await agent.ask(question, tracer.event);
+  tracer.turnEnd(result.reply, result.iterations);
 
   console.log(
     "tool calls:",
