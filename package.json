@@ -20,7 +20,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check src evals",
     "format": "biome format --write src evals",
-    "ab": "tsx src/ops/ab.ts"
+    "ab": "tsx src/ops/ab.ts",
+    "eval:judge": "vitest run evals/judge"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
