@@ -3,8 +3,7 @@
 import type { AgentStatus, ChatItem } from "@/util/types";
 
 import { Composer } from "@/components/blocks/Composer/Composer";
-import { EmptyState } from "@/components/blocks/EmptyState/EmptyState";
-import { ExamplePrompts } from "@/components/blocks/ExamplePrompts/ExamplePrompts";
+import { LandingScreen } from "@/components/blocks/LandingScreen/LandingScreen";
 import { MessageTimeline } from "@/components/blocks/MessageTimeline/MessageTimeline";
 import { useAutoScroll } from "./ChatWindow.model";
 
@@ -29,15 +28,14 @@ export function ChatWindow({
   const scrollRef = useAutoScroll(items);
 
   if (items.length === 0) {
-    // Landing state: welcome text, a centered composer, and starter prompts.
+    // Landing state: welcome text, starter prompts, and composer, animated in.
     return (
-      <div className="flex w-full flex-col overflow-hidden">
-        <div className="flex flex-1 flex-col items-center justify-center gap-10 ">
-          <EmptyState />
-          <ExamplePrompts onSelect={onSubmit} disabled={busy} />
-          <Composer draft={draft} busy={busy} onDraftChange={onDraftChange} onSubmit={onSubmit} />
-        </div>
-      </div>
+      <LandingScreen
+        draft={draft}
+        busy={busy}
+        onDraftChange={onDraftChange}
+        onSubmit={onSubmit}
+      />
     );
   }
 

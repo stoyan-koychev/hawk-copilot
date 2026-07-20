@@ -2,8 +2,10 @@
 export function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center text-center">
-      <h2 className="text-h2 font-bold leading-tight text-primary">Hawk Copilot</h2>
-      <p className="mt-2 max-w-sm text-base text-secondary/70">
+      <h2 className="landing-title reveal text-h2 font-bold leading-tight text-primary">
+        Hawk Copilot
+      </h2>
+      <p className="landing-subtitle reveal mt-2 max-w-sm text-base text-secondary/70">
         Ask anything about Payhawk. Answers are grounded in the help center, with live citations
         and tools.
       </p>

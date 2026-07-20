@@ -87,6 +87,12 @@ h3 {
   animation: text-shimmer 2s linear infinite;
 }
 
+/* Landing elements start hidden so the server-rendered markup doesn't flash
+ * before the GSAP entrance timeline animates them in. */
+.reveal {
+  opacity: 0;
+}
+
 /* Hide the scrollbar while keeping the area scrollable. */
 .no-scrollbar {
   scrollbar-width: none; /* Firefox */

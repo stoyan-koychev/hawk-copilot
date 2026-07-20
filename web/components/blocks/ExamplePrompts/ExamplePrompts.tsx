@@ -23,6 +23,7 @@ export function ExamplePrompts({ onSelect, disabled }: ExamplePromptsProps) {
           text={prompt}
           disabled={disabled}
           onClick={() => onSelect(prompt)}
+          className="landing-prompt reveal"
         />
       ))}
     </div>
