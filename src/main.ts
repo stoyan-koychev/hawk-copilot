@@ -22,7 +22,7 @@ const main = async (): Promise<void> => {
     "How do I get reimbursed for a lunch I paid for with my own money?";
 
   tracer.turnStart(question);
-  const result = await agent.ask(question, tracer.event);
+  const result = await agent.ask(question, { observer: tracer.event });
   tracer.turnEnd(result.reply, result.iterations);
 
   console.log(
