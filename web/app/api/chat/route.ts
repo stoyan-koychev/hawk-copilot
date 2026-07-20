@@ -42,9 +42,11 @@ export const POST = async (req: Request): Promise<Response> => {
               emit("tool", {
                 tool: ev.tool,
                 args: ev.args,
-                // small outputs (FX result, same-currency guard) ride along and become
-                // cards; big ones (6-chunk search dumps) stay backstage
-                ...(output.length <= 300 ? { output } : {}),
+                // Only currency results render as an in-chat card (the converter and
+                // the same-currency guard). search_docs / read_full_doc outputs —
+                // including guard messages like an empty-query retry — stay backstage
+                // in the harness, never as a card.
+                ...(ev.tool === "convert_currency" && output.length <= 300 ? { output } : {}),
               });
             } else if (kind === "llm") emit("llm", { usage: ev.usage });
             else if (kind === "text") emit("text", { delta: ev.delta });
