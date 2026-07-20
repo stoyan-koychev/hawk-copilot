@@ -43,7 +43,7 @@ export default function Home() {
           streaming.current += ev.delta;
           setMessages((m) => [...m.slice(0, -1), { role: "assistant", content: streaming.current }]);
         } else if (ev.kind === "tool") {
-          setEvents((e) => [...e, { kind: "tool", label: `search_docs(${JSON.stringify(ev.args)})` }]);
+          setEvents((e) => [...e, { kind: "tool", label: `${ev.tool}(${JSON.stringify(ev.args)})` }]);
         } else if (ev.kind === "llm") {
           setEvents((e) => [...e, { kind: "llm", label: `llm call - in ${ev.usage.in} / out ${ev.usage.out} tokens` }]);
         } else if (ev.kind === "done") {
@@ -67,7 +67,7 @@ export default function Home() {
   return (
     <main className="mx-auto grid h-screen max-w-5xl grid-cols-[1fr_280px] gap-4 p-4">
       <div className="flex flex-col overflow-hidden rounded-xl border">
-        <header className="border-b px-4 py-2 font-semibold">Hawk Copilot - grounded in Payhawk docs</header>
+        <header className="border-b px-4 py-2 font-semibold">Hawk Copilot - grounded in Payhawk docs</header>
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {messages.map((m, i) => (
             <div key={i} className={m.role === "user" ? "text-right" : ""}>
@@ -83,7 +83,7 @@ export default function Home() {
             className="flex-1 rounded-lg border px-3 py-2 text-sm"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Ask anything about Payhawk-¦"
+            placeholder="Ask anything about Payhawk"
             disabled={busy}
           />
           <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-50" disabled={busy}>
@@ -92,7 +92,7 @@ export default function Home() {
         </form>
       </div>
       <aside className="overflow-y-auto rounded-xl border p-3 text-xs">
-        <h2 className="mb-2 font-semibold">Harness - live</h2>
+        <h2 className="mb-2 font-semibold">Harness - live</h2>
         {events.length === 0 && <p className="text-gray-400">tool calls and model usage appear here as a turn runs</p>}
         {events.map((e, i) => (
           <div key={i} className="mb-1 rounded bg-gray-50 p-2 font-mono">{e.label}</div>
