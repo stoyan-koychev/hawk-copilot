@@ -1,4 +1,4 @@
-import { CountUp } from "@/base/CountUp/CountUp";
+import { CountUp } from "@/components/base/CountUp/CountUp";
 import { useToolCard } from "./ToolCard.model";
 
 type ToolCardProps = {

@@ -11,7 +11,8 @@
   --color-primary: #041818;
   --color-secondary: #072928;
   --color-accent: #a1ed86;
-  --color-background: #dff9f9;
+  --color-background: #f4f2f1;
+  --color-light-green: #dff9f9;
   --color-ink: #000000;
   --color-link: #072928;
 
@@ -29,7 +30,6 @@ html {
 }
 
 body {
-  background: var(--color-background);
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: var(--text-body);
