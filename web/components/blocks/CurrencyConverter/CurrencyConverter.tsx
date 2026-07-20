@@ -1,6 +1,5 @@
 "use client";
 
-
 import { type CurrencyConversion, formatRateDate } from "@/util/currency";
 import { useCurrencyConverter } from "./CurrencyConverter.model";
 
@@ -48,10 +47,6 @@ export function CurrencyConverter({ conversion }: CurrencyConverterProps) {
 
       <div className="mt-2">
         <ConverterRow code={fromCode} value={fromValue} onChange={onFromChange} />
-
-        {/* Swap button on the left with the rate pill centered between the rows. */}
-
-
         <ConverterRow code={toCode} value={toValue} onChange={onToChange} />
       </div>
     </div>
