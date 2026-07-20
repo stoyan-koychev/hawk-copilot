@@ -35,8 +35,16 @@ export const POST = async (req: Request): Promise<Response> => {
           history,
           stream: true,
           observer: composeObservers(tracer.event, (kind, ev) => {
-            if (kind === "tool") emit("tool", { tool: ev.tool, args: ev.args });
-            else if (kind === "llm") emit("llm", { usage: ev.usage });
+            if (kind === "tool") {
+              const output = String(ev.output ?? "");
+              emit("tool", {
+                tool: ev.tool,
+                args: ev.args,
+                // small outputs (FX result, same-currency guard) ride along and become
+                // cards; big ones (6-chunk search dumps) stay backstage
+                ...(output.length <= 300 ? { output } : {}),
+              });
+            } else if (kind === "llm") emit("llm", { usage: ev.usage });
             else if (kind === "text") emit("text", { delta: ev.delta });
           }),
         });

@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/*
+ * Design tokens. Tailwind v4 reads @theme and generates utilities from these:
+ *   --color-... generates bg-, text-, border- (e.g. bg-primary, text-accent)
+ *   --font-...  generates font- (e.g. font-heading)
+ *   --text-...  generates text- (e.g. text-h1, text-h2, text-body)
+ * `inline` keeps the font vars resolving at usage time so next/font can inject them.
+ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: #041818;
+  --color-secondary: #072928;
+  --color-accent: #a1ed86;
+  --color-background: #dff9f9;
+  --color-ink: #000000;
+  --color-link: #072928;
+
+  /* Roboto for body, Segoe UI for headings; Arial is the shared fallback. */
+  --font-sans: var(--font-roboto), Roboto, Arial, sans-serif;
+  --font-heading: "Segoe UI", var(--font-roboto), Arial, sans-serif;
+
+  --text-h1: 16px;
+  --text-h2: 48px;
+  --text-body: 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-background);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(161, 237, 134, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(161, 237, 134, 0);
+  }
+}
+.tool-card {
+  animation:
+    card-in 0.35s ease-out,
+    glow 0.9s ease-out;
+}
+.harness-line {
+  animation: card-in 0.25s ease-out;
 }
