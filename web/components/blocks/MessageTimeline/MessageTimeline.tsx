@@ -1,4 +1,5 @@
 import { Linkified } from "@/components/base/Linkified/Linkified";
+import { MarkdownMessage } from "@/components/base/MarkdownMessage/MarkdownMessage";
 import { MessageBubble } from "@/components/base/MessageBubble/MessageBubble";
 import { TypingStatus } from "@/components/base/TypingStatus/TypingStatus";
 import type { AgentStatus, ChatItem } from "@/util/types";
@@ -26,7 +27,12 @@ export function MessageTimeline({ items, status }: MessageTimelineProps) {
         ) : (
           <MessageBubble key={index} role={item.kind}>
             {item.content ? (
-              <Linkified text={item.content} />
+              // Assistant replies are Markdown (+ a sources block); user text is plain.
+              item.kind === "assistant" ? (
+                <MarkdownMessage content={item.content} />
+              ) : (
+                <Linkified text={item.content} />
+              )
             ) : status ? (
               // The empty assistant bubble shows the live "what am I doing" status.
               <TypingStatus status={status} />
