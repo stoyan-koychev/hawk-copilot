@@ -68,6 +68,25 @@ h3 {
   animation: card-in 0.25s ease-out;
 }
 
+/* A muted-teal label with a lighter band sweeping across the glyphs, used for
+ * the agent's live "Thinking… / Searching…" status. */
+@keyframes text-shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+.shimmer-text {
+  background: linear-gradient(90deg, #7c9a99 0%, #072928 20%, #7c9a99 40%, #7c9a99 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: text-shimmer 2s linear infinite;
+}
+
 /* Hide the scrollbar while keeping the area scrollable. */
 .no-scrollbar {
   scrollbar-width: none; /* Firefox */

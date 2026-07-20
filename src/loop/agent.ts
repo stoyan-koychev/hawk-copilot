@@ -108,6 +108,9 @@ export const runLoop = async (opts: {
     // ---- act: execute each requested tool; observe: feed results back
     const toolResults: ToolResultBlock[] = [];
     for (const call of toolUses) {
+      // fired BEFORE the tool runs so a gateway can show "using X…" during the
+      // wait; the "tool" event below fires after, carrying the result.
+      notify("tool_start", { tool: call.name, args: call.input });
       const output = await executeTool(tools, call.name, call.input);
       const event: ToolCallEvent = {
         tool: call.name,

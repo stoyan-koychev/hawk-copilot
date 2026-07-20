@@ -6,7 +6,7 @@ import { useChatPage } from "./ChatPage.model";
 
 /** The chat page: wires the interaction hook into the layout and its panels. */
 export default function ChatPage() {
-  const { items, events, draft, busy, setDraft, send } = useChatPage();
+  const { items, events, draft, busy, status, setDraft, send } = useChatPage();
 
   return (
     <main className="mx-auto grid h-screen max-w-3xl w-full gap-4 px-4">
@@ -14,6 +14,7 @@ export default function ChatPage() {
         items={items}
         draft={draft}
         busy={busy}
+        status={status}
         onDraftChange={setDraft}
         onSubmit={send}
       />

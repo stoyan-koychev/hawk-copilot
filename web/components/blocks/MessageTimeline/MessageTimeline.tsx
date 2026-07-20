@@ -1,17 +1,19 @@
 import { Linkified } from "@/components/base/Linkified/Linkified";
 import { MessageBubble } from "@/components/base/MessageBubble/MessageBubble";
-import type { ChatItem } from "@/util/types";
+import { TypingStatus } from "@/components/base/TypingStatus/TypingStatus";
+import type { AgentStatus, ChatItem } from "@/util/types";
 import { ToolCard } from "@/components/blocks/ToolCard/ToolCard";
 
 type MessageTimelineProps = {
   items: ChatItem[];
+  status: AgentStatus | null;
 };
 
-// A placeholder ellipsis is shown while an assistant bubble is still streaming.
+// Shown in an assistant bubble that has no text yet and no active status.
 const STREAMING_PLACEHOLDER = "…";
 
 /** The single interleaved timeline of message bubbles and tool cards. */
-export function MessageTimeline({ items }: MessageTimelineProps) {
+export function MessageTimeline({ items, status }: MessageTimelineProps) {
   return (
     <>
       {items.map((item, index) =>
@@ -23,7 +25,14 @@ export function MessageTimeline({ items }: MessageTimelineProps) {
           </div>
         ) : (
           <MessageBubble key={index} role={item.kind}>
-            {item.content ? <Linkified text={item.content} /> : STREAMING_PLACEHOLDER}
+            {item.content ? (
+              <Linkified text={item.content} />
+            ) : status ? (
+              // The empty assistant bubble shows the live "what am I doing" status.
+              <TypingStatus status={status} />
+            ) : (
+              STREAMING_PLACEHOLDER
+            )}
           </MessageBubble>
         ),
       )}

@@ -99,7 +99,8 @@ describe("runLoop", () => {
     expect(toolResultMsg?.content).toEqual([
       { type: "tool_result", tool_use_id: "tu_1", content: 'echoed: {"x":1}' },
     ]);
-    expect(events.map(([kind]) => kind)).toEqual(["llm", "tool", "llm"]);
+    // tool_start fires before the tool runs; tool fires after with its output.
+    expect(events.map(([kind]) => kind)).toEqual(["llm", "tool_start", "tool", "llm"]);
   });
 
   it("stops at the iteration guardrail with the canned message", async () => {

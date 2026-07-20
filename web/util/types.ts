@@ -11,3 +11,7 @@ export type ChatItem =
   | { kind: "card"; tool: string; output: string };
 
 export type HarnessEvent = { turn: number; label: string };
+
+// What the agent is doing right now, shown as a live status while it works:
+// reasoning ("thinking") or running a specific tool.
+export type AgentStatus = { kind: "thinking" } | { kind: "tool"; tool: string };

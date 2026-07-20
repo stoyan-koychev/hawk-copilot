@@ -35,7 +35,9 @@ export const POST = async (req: Request): Promise<Response> => {
           history,
           stream: true,
           observer: composeObservers(tracer.event, (kind, ev) => {
-            if (kind === "tool") {
+            if (kind === "tool_start") {
+              emit("tool_start", { tool: ev.tool });
+            } else if (kind === "tool") {
               const output = String(ev.output ?? "");
               emit("tool", {
                 tool: ev.tool,

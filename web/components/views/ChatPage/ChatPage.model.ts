@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { formatToolLabel, formatUsageLabel } from "@/util/harness-label";
-import type { ChatItem, HarnessEvent } from "@/util/types";
+import type { AgentStatus, ChatItem, HarnessEvent } from "@/util/types";
 
 // What the browser sends back as prior conversation. Cards are UI-only and are
 // never part of the history, so only user/assistant bubbles qualify.
@@ -13,6 +13,7 @@ export type UseChatPage = {
   events: HarnessEvent[];
   draft: string;
   busy: boolean;
+  status: AgentStatus | null;
   setDraft: (value: string) => void;
   send: (text?: string) => Promise<void>;
 };
@@ -28,6 +29,7 @@ export function useChatPage(): UseChatPage {
   const [turn, setTurn] = useState(0);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState<AgentStatus | null>(null);
 
   /** Replace the trailing assistant bubble (the streaming placeholder). */
   const setReply = (content: string) =>
@@ -50,6 +52,7 @@ export function useChatPage(): UseChatPage {
     if (!question || busy) return;
     setDraft("");
     setBusy(true);
+    setStatus({ kind: "thinking" });
     const thisTurn = turn + 1;
     setTurn(thisTurn);
 
@@ -85,12 +88,16 @@ export function useChatPage(): UseChatPage {
         if (event.kind === "text") {
           streamed += event.delta;
           setReply(streamed);
+          setStatus(null); // the visible answer is now streaming
+        } else if (event.kind === "tool_start") {
+          setStatus({ kind: "tool", tool: event.tool });
         } else if (event.kind === "tool") {
           setEvents((list) => [
             ...list,
             { turn: thisTurn, label: formatToolLabel(event.tool, event.args) },
           ]);
           if (event.output) addCard(event.tool, event.output);
+          setStatus({ kind: "thinking" }); // tool done; model reasons on the result next
         } else if (event.kind === "llm") {
           setEvents((list) => [
             ...list,
@@ -102,7 +109,8 @@ export function useChatPage(): UseChatPage {
       }
     }
     setBusy(false);
+    setStatus(null);
   };
 
-  return { items, events, draft, busy, setDraft, send };
+  return { items, events, draft, busy, status, setDraft, send };
 }
