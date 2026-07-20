@@ -3,19 +3,21 @@
 import { Button } from "@/components/base/Button/Button";
 import { SendIcon } from "@/components/base/SendIcon/SendIcon";
 import { TextInput } from "@/components/base/TextInput/TextInput";
+import { cn } from "@/util/cn";
 
 type ComposerProps = {
   draft: string;
   busy: boolean;
   onDraftChange: (value: string) => void;
   onSubmit: () => void;
+  className?: string;
 };
 
 /** The message input row: text field + send button. */
-export function Composer({ draft, busy, onDraftChange, onSubmit }: ComposerProps) {
+export function Composer({ draft, busy, onDraftChange, onSubmit, className }: ComposerProps) {
   return (
     <form
-      className="py-3 px-5 pb-5"
+      className={cn("py-3 px-5 pb-5 w-full", className)}
       onSubmit={(event) => {
         event.preventDefault();
         onSubmit();

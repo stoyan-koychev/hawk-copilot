@@ -17,7 +17,7 @@ export function MessageBubble({ role, children }: MessageBubbleProps) {
       <Avatar role={role} />
       <div
         className={cn(
-          "max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-base",
+          "max-w-[75%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-base",
           isUser
             ? "rounded-br-sm bg-secondary text-background"
             : "rounded-bl-sm  bg-white text-ink",

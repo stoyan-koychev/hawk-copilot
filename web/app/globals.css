@@ -67,3 +67,11 @@ h3 {
 .harness-line {
   animation: card-in 0.25s ease-out;
 }
+
+/* Hide the scrollbar while keeping the area scrollable. */
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

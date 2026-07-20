@@ -14,7 +14,7 @@ export type UseChatPage = {
   draft: string;
   busy: boolean;
   setDraft: (value: string) => void;
-  send: () => Promise<void>;
+  send: (text?: string) => Promise<void>;
 };
 
 /**
@@ -43,8 +43,10 @@ export function useChatPage(): UseChatPage {
       return [...list.slice(0, index), { kind: "card", tool, output }, ...list.slice(index)];
     });
 
-  const send = async () => {
-    const question = draft.trim();
+  // `text` defaults to the current draft, but an example-prompt box can pass its
+  // own text to send directly without going through the input.
+  const send = async (text: string = draft) => {
+    const question = text.trim();
     if (!question || busy) return;
     setDraft("");
     setBusy(true);
