@@ -18,7 +18,7 @@ export function LandingScreen({ draft, busy, onDraftChange, onSubmit }: LandingS
   const containerRef = useLandingAnimation();
 
   return (
-    <div ref={containerRef} className="flex w-full flex-col overflow-hidden">
+    <div ref={containerRef} className="flex h-full w-full flex-col overflow-hidden">
       <div className="flex flex-1 flex-col items-center justify-center gap-10">
         <EmptyState />
         <ExamplePrompts onSelect={onSubmit} disabled={busy} />

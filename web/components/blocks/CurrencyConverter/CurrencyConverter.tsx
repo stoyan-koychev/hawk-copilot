@@ -37,7 +37,7 @@ export function CurrencyConverter({ conversion }: CurrencyConverterProps) {
     useCurrencyConverter(conversion);
 
   return (
-    <div className="tool-card my-1 w-[320px] rounded-2xl  bg-white p-2">
+    <div className="tool-card my-1 w-full max-w-[320px] rounded-2xl bg-white p-2">
       <div className="flex items-center justify-between px-2 pt-2">
         <span className="text-[12px] text-secondary/50">{formatRateDate(conversion.date)}</span>
         <span className="text-[12px] font-semibold uppercase tracking-wide text-secondary">

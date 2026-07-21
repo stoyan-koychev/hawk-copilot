@@ -40,7 +40,7 @@ export function ChatWindow({
   }
 
   return (
-    <div className="flex w-full flex-col overflow-hidden">
+    <div className="flex h-full w-full flex-col overflow-hidden">
       <div ref={scrollRef} className="no-scrollbar flex-1 space-y-3 overflow-y-auto p-5">
         <MessageTimeline items={items} status={status} />
       </div>
