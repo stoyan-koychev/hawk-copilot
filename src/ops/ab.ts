@@ -14,6 +14,7 @@ import { makePool } from "../retrieval/db.js";
 import { embedQuery } from "../retrieval/embed.js";
 import { denseSearch, rrf, sparseSearch } from "../retrieval/search.js";
 import type { ScoredChunk } from "../retrieval/search.js";
+import { type AbResults, recordAbRun } from "./eval-store.js";
 import { loadRagCases, mrr, recallAtK } from "./rag-metrics.js";
 import { configVersion } from "./version.js";
 import { RETRIEVAL_CONFIG } from "../retrieval/config.js";
@@ -80,6 +81,26 @@ const main = async (): Promise<void> => {
     console.log(`${b.padEnd(12)}${row}`);
   }
   await pool.end();
+
+  // Persist (averaged) to the ops DB so /ops/evals can render this table.
+  if (settings.traceDatabaseUrl) {
+    const results: AbResults = {};
+    for (const mode of MODES) {
+      results[mode] = {};
+      for (const b of buckets) {
+        const s = scores.get(mode)!.get(b);
+        results[mode]![b] = s ? { recall: s.recall / s.n, mrr: s.mrr / s.n, n: s.n } : null;
+      }
+    }
+    const opsPool = makePool(settings.traceDatabaseUrl);
+    try {
+      await recordAbRun(opsPool, { config: configVersion(), k: K, cases: cases.length, results });
+    } catch {
+      // best-effort — the console table is the primary output
+    } finally {
+      await opsPool.end();
+    }
+  }
 };
 
 main();

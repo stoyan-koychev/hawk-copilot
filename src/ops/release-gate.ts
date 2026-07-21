@@ -23,6 +23,8 @@ import path from "node:path";
 import process from "node:process";
 import { ensureHome, loadSettings } from "../config.js";
 import { PROVIDERS } from "../loop/providers.js";
+import { makePool } from "../retrieval/db.js";
+import { recordGateRun } from "./eval-store.js";
 import { configVersion } from "./version.js";
 
 const REPO = path.resolve(import.meta.dirname, "../..");
@@ -66,12 +68,13 @@ const run = (suite: string): [number, Counts] => {
   return [proc.status ?? 1, counts];
 };
 
-/** Persist the verdict AND append it to the run history. */
-const report = (
+/** Persist the verdict: local files (always) + the ops DB (when configured), so a
+ * deployed /ops/evals can read the history. */
+const report = async (
   deterministic: string,
   judge: string,
   suites: Record<string, Counts>,
-): void => {
+): Promise<void> => {
   const settings = loadSettings();
   ensureHome(settings.home);
   const record = {
@@ -91,14 +94,25 @@ const report = (
     `${JSON.stringify(record)}\n`,
     "utf-8",
   );
+
+  if (settings.traceDatabaseUrl) {
+    const pool = makePool(settings.traceDatabaseUrl);
+    try {
+      await recordGateRun(pool, record);
+    } catch {
+      // persistence is best-effort — never fail the gate on a DB hiccup
+    } finally {
+      await pool.end();
+    }
+  }
 };
 
-const main = (): void => {
+const main = async (): Promise<void> => {
   const suites: Record<string, Counts> = {};
   const [detCode, detCounts] = run("deterministic");
   suites.deterministic = detCounts;
   if (detCode !== 0) {
-    report("fail", "not run", suites);
+    await report("fail", "not run", suites);
     console.log(
       "\nGATE CLOSED - deterministic evals failed. Fix before releasing.",
     );
@@ -112,13 +126,13 @@ const main = (): void => {
     const [judgeCode, judgeCounts] = run("judge");
     suites.judge = judgeCounts;
     if (judgeCode !== 0) {
-      report("pass", "fail", suites);
+      await report("pass", "fail", suites);
       console.log("\nGATE CLOSED - judge scores below threshold.");
       process.exit(1);
     }
-    report("pass", "pass", suites);
+    await report("pass", "pass", suites);
   } else {
-    report("pass", "skipped", suites);
+    await report("pass", "skipped", suites);
     console.log(
       `\n(judge suite skipped: no API key for provider '${settings.provider}')`,
     );

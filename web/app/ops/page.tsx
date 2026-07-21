@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PurgeTracesButton } from "@/components/blocks/PurgeTracesButton/PurgeTracesButton";
 import { TurnsTable } from "@/components/blocks/TurnsTable/TurnsTable";
 import { getDashboard, opsConfigured } from "@/lib/traces";
@@ -34,7 +35,12 @@ export default async function OpsPage() {
   return (
     <main className="mx-auto max-w-5xl space-y-8 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-bold text-primary">Ops &mdash; traces</h1>
+        <div className="flex items-baseline gap-4">
+          <h1 className="font-heading text-2xl font-bold text-primary">Ops &mdash; traces</h1>
+          <Link href="/ops/evals" className="text-sm font-medium text-link hover:text-primary">
+            Evals &rsaquo;
+          </Link>
+        </div>
         <PurgeTracesButton />
       </div>
 

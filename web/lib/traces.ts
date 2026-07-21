@@ -9,6 +9,8 @@ import { fetchDashboard, purgeTraces } from "@agent/ops/trace-queries";
 import type { Dashboard } from "@agent/ops/trace-queries";
 import { insertFeedback } from "@agent/ops/feedback";
 import type { Feedback } from "@agent/ops/feedback";
+import { fetchGateHistory, fetchLatestAb, fetchLatestGate } from "@agent/ops/eval-store";
+import type { AbRun, EvalRun } from "@agent/ops/eval-store";
 
 const settings = loadSettings();
 
@@ -35,4 +37,22 @@ export const recordFeedback = async (feedback: Feedback): Promise<void> => {
 export const purgeAllTraces = async (): Promise<void> => {
   if (!settings.traceDatabaseUrl) throw new Error("traces DB not configured");
   await purgeTraces(pool());
+};
+
+export type EvalsData = {
+  latestGate: EvalRun | null;
+  gateHistory: EvalRun[];
+  latestAb: AbRun | null;
+};
+
+/** Offline-quality data for /ops/evals (gate verdict + history, latest A/B). */
+export const getEvals = async (): Promise<EvalsData | null> => {
+  if (!settings.traceDatabaseUrl) return null;
+  const p = pool();
+  const [latestGate, gateHistory, latestAb] = await Promise.all([
+    fetchLatestGate(p),
+    fetchGateHistory(p, 20),
+    fetchLatestAb(p),
+  ]);
+  return { latestGate, gateHistory, latestAb };
 };
