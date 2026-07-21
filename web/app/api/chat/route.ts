@@ -1,9 +1,9 @@
-import { makeAgent } from "@agent/agent";
-import { loadSettings } from "@agent/config";
-import { resolveSettings } from "@agent/loop/client";
-import { makeTracer } from "@agent/ops/tracing";
-import { composeObservers } from "@agent/types";
-import type { LoopEvent, Message } from "@agent/types";
+import { makeAgent } from "@hawk/agent/agent";
+import { loadSettings } from "@hawk/agent/config";
+import { resolveSettings } from "@hawk/agent/loop/client";
+import { makeTracer } from "@hawk/agent/ops/tracing";
+import { composeObservers } from "@hawk/agent/types";
+import type { LoopEvent, Message } from "@hawk/agent/types";
 
 export const runtime = "nodejs";
 // A multi-tool turn (retrieval + FX + streaming) can run well past the default

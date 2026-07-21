@@ -1,4 +1,4 @@
-import type { TurnRow } from "@agent/ops/trace-queries";
+import type { TurnRow } from "@hawk/agent/ops/trace-queries";
 import { formatMs, waterfallSteps } from "@/util/trace-format";
 import { cn } from "@/util/cn";
 

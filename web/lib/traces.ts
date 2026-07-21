@@ -2,15 +2,15 @@
 // DB, and a simple token gate. Never import this from a client component (it
 // pulls in pg and reads OPS_TOKEN).
 
-import { loadSettings } from "@agent/config";
-import { makePool } from "@agent/retrieval/db";
-import type { DbPool } from "@agent/retrieval/db";
-import { fetchDashboard, purgeTraces } from "@agent/ops/trace-queries";
-import type { Dashboard } from "@agent/ops/trace-queries";
-import { insertFeedback } from "@agent/ops/feedback";
-import type { Feedback } from "@agent/ops/feedback";
-import { fetchGateHistory, fetchLatestAb, fetchLatestGate } from "@agent/ops/eval-store";
-import type { AbRun, EvalRun } from "@agent/ops/eval-store";
+import { loadSettings } from "@hawk/agent/config";
+import { makePool } from "@hawk/agent/retrieval/db";
+import type { DbPool } from "@hawk/agent/retrieval/db";
+import { fetchDashboard, purgeTraces } from "@hawk/agent/ops/trace-queries";
+import type { Dashboard } from "@hawk/agent/ops/trace-queries";
+import { insertFeedback } from "@hawk/agent/ops/feedback";
+import type { Feedback } from "@hawk/agent/ops/feedback";
+import { fetchGateHistory, fetchLatestAb, fetchLatestGate } from "@hawk/agent/ops/eval-store";
+import type { AbRun, EvalRun } from "@hawk/agent/ops/eval-store";
 
 const settings = loadSettings();
 

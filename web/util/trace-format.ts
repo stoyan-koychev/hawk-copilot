@@ -1,4 +1,4 @@
-import type { TraceEvent } from "@agent/ops/trace-queries";
+import type { TraceEvent } from "@hawk/agent/ops/trace-queries";
 
 export type StepSummary = {
   kind: "llm" | "retrieval" | "tool";

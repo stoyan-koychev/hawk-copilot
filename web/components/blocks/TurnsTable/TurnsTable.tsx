@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import type { TurnRow } from "@agent/ops/trace-queries";
+import type { TurnRow } from "@hawk/agent/ops/trace-queries";
 import { TurnDetail } from "@/components/blocks/TurnDetail/TurnDetail";
 import { formatMs } from "@/util/trace-format";
 import { cn } from "@/util/cn";

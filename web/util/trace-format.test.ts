@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { TraceEvent } from "@agent/ops/trace-queries";
+import type { TraceEvent } from "@hawk/agent/ops/trace-queries";
 import { summarizeEvent, turnSteps, waterfallSteps } from "./trace-format";
 
 const event = (type: string, data: Record<string, unknown>, model = ""): TraceEvent => ({

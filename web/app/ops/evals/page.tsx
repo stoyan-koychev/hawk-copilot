@@ -1,4 +1,4 @@
-import type { AbResults, EvalRun } from "@agent/ops/eval-store";
+import type { AbResults, EvalRun } from "@hawk/agent/ops/eval-store";
 import { getEvals, opsConfigured } from "@/lib/traces";
 import { cn } from "@/util/cn";
 

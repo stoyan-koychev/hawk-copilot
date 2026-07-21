@@ -1,4 +1,4 @@
-import { configVersion } from "@agent/ops/version";
+import { configVersion } from "@hawk/agent/ops/version";
 
 export const runtime = "nodejs";
 
