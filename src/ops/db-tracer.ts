@@ -68,7 +68,10 @@ export const makeDbTracer = (
   ): void => {
     const work = ensureSchema(pool)
       .then(() => pool.query(INSERT_ROW, [type, provider, model, turnId, JSON.stringify(data)]))
-      .catch(() => {}) // tracing must never break a turn
+      // tracing must never break a turn, but log WHY it failed (silent-empty is worse).
+      .catch((error) => {
+        console.error(`[trace] write failed: ${error instanceof Error ? error.message : error}`);
+      })
       .finally(() => pending.delete(work));
     pending.add(work);
   };
