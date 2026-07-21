@@ -30,12 +30,22 @@ export const makeSearchDocsTool = (pool: DbPool, apiKey: string): Tool => ({
     },
     required: ["query"],
   },
-  run: async (args) => {
+  run: async (args, notify) => {
     const query = String(args.query ?? "").trim();
     if (!query)
       return "search_docs needs a query. Please call it again with the user's question.";
 
+    const startedAt = Date.now();
     const chunks = await hybridSearch(pool, apiKey, query, 6);
+    // Structured retrieval event for the trace layer: which chunks + scores, how
+    // slow — the observability material that pairs with the evals.
+    notify?.("retrieval", {
+      query,
+      mode: "hybrid",
+      latency_ms: Date.now() - startedAt,
+      count: chunks.length,
+      results: chunks.map((c) => ({ id: c.id, url: c.url, score: c.score })),
+    });
     if (chunks.length === 0) {
       return "No relevant documentation found for that query.";
     }

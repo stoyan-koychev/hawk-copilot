@@ -50,6 +50,12 @@ export type Settings = {
   readonly llmTimeoutMs: number;
   // --- Org knowledge base (Supabase Postgres + pgvector); empty = retrieval unavailable
   readonly databaseUrl: string;
+  // --- Tracing backend. "file" writes JSONL locally (default); "db" writes to a
+  // SEPARATE Postgres (HAWK_TRACE_DATABASE_URL) so it works on read-only/serverless
+  // hosts without touching the retrieval DB; "off" disables it. HAWK_TRACE=off forces off.
+  readonly traceBackend: "off" | "file" | "db";
+  // Dedicated traces database (a separate Supabase project). Empty = no db backend.
+  readonly traceDatabaseUrl: string;
 };
 
 const int = (name: string, fallback: number): number => {
@@ -67,8 +73,14 @@ const defaultHome = (): string => {
     : path.resolve(process.cwd(), ".hawk");
 };
 
-export const loadSettings = (overrides: Partial<Settings> = {}): Settings =>
-  Object.freeze({
+const traceBackendFrom = (traceDatabaseUrl: string): Settings["traceBackend"] => {
+  if (["0", "off", "false"].includes((process.env.HAWK_TRACE ?? "").toLowerCase())) return "off";
+  return traceDatabaseUrl ? "db" : "file";
+};
+
+export const loadSettings = (overrides: Partial<Settings> = {}): Settings => {
+  const traceDatabaseUrl = process.env.HAWK_TRACE_DATABASE_URL ?? "";
+  return Object.freeze({
     provider: process.env.HAWK_PROVIDER ?? "openai",
     apiKey: process.env.HAWK_API_KEY ?? "",
     baseUrl: process.env.HAWK_BASE_URL || null,
@@ -82,8 +94,11 @@ export const loadSettings = (overrides: Partial<Settings> = {}): Settings =>
     retrievalTopK: int("HAWK_RETRIEVAL_TOP_K", 4),
     llmTimeoutMs: int("HAWK_LLM_TIMEOUT", 120) * 1000,
     databaseUrl: process.env.DATABASE_URL ?? "",
+    traceDatabaseUrl,
+    traceBackend: traceBackendFrom(traceDatabaseUrl),
     ...overrides,
   });
+};
 
 export const ensureHome = (home: string): string => {
   mkdirSync(home, { recursive: true });

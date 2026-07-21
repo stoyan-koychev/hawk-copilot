@@ -6,14 +6,15 @@
  * plain ReadonlyMap plus free functions — no class, no state beyond the map.
  */
 
-import type { ToolApiSchema } from "../types.js";
+import type { Observer, ToolApiSchema } from "../types.js";
 
 export type Tool = {
   readonly name: string;
   readonly description: string;
   readonly inputSchema: Record<string, unknown>;
-  // tools return a string the model observes
-  readonly run: (args: Record<string, unknown>) => Promise<string> | string;
+  // tools return a string the model observes; the optional notify lets a tool
+  // emit its own structured trace events (e.g. search_docs → "retrieval").
+  readonly run: (args: Record<string, unknown>, notify?: Observer) => Promise<string> | string;
 };
 
 export type ToolRegistry = ReadonlyMap<string, Tool>;
@@ -35,11 +36,12 @@ export const executeTool = async (
   registry: ToolRegistry,
   name: string,
   args: Record<string, unknown>,
+  notify?: Observer,
 ): Promise<string> => {
   const tool = registry.get(name);
   if (!tool) return `Error: unknown tool '${name}'`;
   try {
-    return await tool.run(args);
+    return await tool.run(args, notify);
   } catch (exc) {
     // surface, don't crash — the model can retry
     return `Error running ${name}: ${exc instanceof Error ? exc.message : exc}`;

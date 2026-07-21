@@ -38,6 +38,17 @@ export function useChatPage(): UseChatPage {
       return [...list.slice(0, index), { kind: "assistant", content }, ...list.slice(index + 1)];
     });
 
+  /** Finalize the trailing assistant bubble with its content and trace turnId. */
+  const finishReply = (content: string, turnId?: string) =>
+    setItems((list) => {
+      const index = list.findLastIndex((item) => item.kind === "assistant");
+      return [
+        ...list.slice(0, index),
+        { kind: "assistant", content, turnId },
+        ...list.slice(index + 1),
+      ];
+    });
+
   /** Insert a card BEFORE the streaming assistant bubble — under its question. */
   const addCard = (tool: string, output: string) =>
     setItems((list) => {
@@ -104,7 +115,10 @@ export function useChatPage(): UseChatPage {
             { turn: thisTurn, label: formatUsageLabel(event.usage) },
           ]);
         } else if (event.kind === "done") {
-          setReply(event.error ? `Something went wrong: ${event.error}` : event.reply);
+          finishReply(
+            event.error ? `Something went wrong: ${event.error}` : event.reply,
+            event.turnId,
+          );
         }
       }
     }

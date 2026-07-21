@@ -13,6 +13,7 @@ import { appendFileSync } from "node:fs";
 import path from "node:path";
 import { ensureHome, type Settings } from "../config.js";
 import type { LoopEvent, Observer } from "../types.js";
+import { makeDbTracer } from "./db-tracer.js";
 
 /** Local calendar date as YYYY-MM-DD. (toISOString() is UTC and would stamp
  * evening chats with tomorrow's date for anyone east of Greenwich.) */
@@ -30,22 +31,52 @@ export type Tracer = {
   readonly event: Observer;
   readonly turnStart: (userMessage: string) => void;
   readonly turnEnd: (reply: string, iterations: number) => void;
+  /** The db backend's id for this turn, so the caller can correlate feedback to
+   * it (sent to the browser in the SSE `done` event). Absent for file/no-op. */
+  readonly turnId?: string | null;
+  /** Async backends (db) buffer writes; callers await this at end of turn so
+   * they land before a serverless function freezes. No-op for sync backends. */
+  readonly flush?: () => Promise<void>;
+  /** Release any owned resources (e.g. a db pool) so a CLI process can exit. */
+  readonly close?: () => Promise<void>;
 };
 
-export const makeTracer = (settings: Settings): Tracer => {
-  const tracePath = path.join(
-    ensureHome(settings.home),
-    "traces",
-    `${localDateISO()}.jsonl`,
-  );
-  const usagePath = path.join(ensureHome(settings.home), "usage.jsonl");
+/** A tracer that does nothing — used when tracing is disabled or the filesystem
+ * isn't writable (serverless). The live UI reads the SSE stream, not these files. */
+const noopTracer: Tracer = Object.freeze({
+  event: () => {},
+  turnStart: () => {},
+  turnEnd: () => {},
+});
 
+/** Pick a tracer backend from config: off → no-op, db → Postgres, file → JSONL. */
+export const makeTracer = (settings: Settings): Tracer => {
+  if (settings.traceBackend === "off") return noopTracer;
+  if (settings.traceBackend === "db") return makeDbTracer(settings.traceDatabaseUrl, settings);
+  return makeFileTracer(settings);
+};
+
+const makeFileTracer = (settings: Settings): Tracer => {
+  let home: string;
+  try {
+    home = ensureHome(settings.home);
+  } catch {
+    return noopTracer;
+  }
+  const tracePath = path.join(home, "traces", `${localDateISO()}.jsonl`);
+  const usagePath = path.join(home, "usage.jsonl");
+
+  // Writes are best-effort: a read-only FS degrades to no-op instead of throwing.
   const write = (record: Record<string, unknown>): void => {
-    appendFileSync(
-      tracePath,
-      `${JSON.stringify({ ...record, ts: now() })}\n`,
-      "utf-8",
-    );
+    try {
+      appendFileSync(
+        tracePath,
+        `${JSON.stringify({ ...record, ts: now() })}\n`,
+        "utf-8",
+      );
+    } catch {
+      // ignore — tracing must never break a turn
+    }
   };
 
   /** Append one LLM call's token usage to a PERMANENT ledger (usage.jsonl).
@@ -62,7 +93,11 @@ export const makeTracer = (settings: Settings): Tracer => {
       in: usage.in ?? 0,
       out: usage.out ?? 0,
     };
-    appendFileSync(usagePath, `${JSON.stringify(record)}\n`, "utf-8");
+    try {
+      appendFileSync(usagePath, `${JSON.stringify(record)}\n`, "utf-8");
+    } catch {
+      // ignore — the usage ledger is best-effort
+    }
   };
 
   return Object.freeze({

@@ -24,6 +24,7 @@ const main = async (): Promise<void> => {
   tracer.turnStart(question);
   const result = await agent.ask(question, { observer: tracer.event });
   tracer.turnEnd(result.reply, result.iterations);
+  await tracer.flush?.();
 
   console.log(
     "tool calls:",
@@ -33,6 +34,7 @@ const main = async (): Promise<void> => {
   console.log(`\n${result.reply}`);
 
   await agent.end();
+  await tracer.close?.();
 };
 
 main();

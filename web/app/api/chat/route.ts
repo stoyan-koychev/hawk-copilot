@@ -6,12 +6,15 @@ import { composeObservers } from "@agent/types";
 import type { LoopEvent, Message } from "@agent/types";
 
 export const runtime = "nodejs";
+// A multi-tool turn (retrieval + FX + streaming) can run well past the default
+// serverless limit; give it headroom (Vercel Hobby caps at 60s, Pro at 300s).
+export const maxDuration = 60;
 
-// Module-level singletons: Next keeps this module warm across requests, so
-// one pool + one tracer serve the whole dev session.
+// Module-level singletons: Next keeps this module warm across requests, so one
+// pool serves the whole dev session. The tracer, however, is built PER REQUEST
+// (below) so each turn gets its own turn_id without a shared-singleton race.
 const settings = resolveSettings(loadSettings());
 const agent = makeAgent(settings);
-const tracer = makeTracer(settings);
 
 export const POST = async (req: Request): Promise<Response> => {
   const { message, history = [] } = (await req.json()) as {
@@ -21,6 +24,7 @@ export const POST = async (req: Request): Promise<Response> => {
   if (!message?.trim())
     return Response.json({ error: "empty message" }, { status: 400 });
 
+  const tracer = makeTracer(settings);
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -53,12 +57,20 @@ export const POST = async (req: Request): Promise<Response> => {
           }),
         });
         tracer.turnEnd(result.reply, result.iterations);
-        emit("done", { reply: result.reply, iterations: result.iterations });
+        // turnId lets the browser correlate feedback to this turn (db backend only).
+        emit("done", {
+          reply: result.reply,
+          iterations: result.iterations,
+          ...(tracer.turnId ? { turnId: tracer.turnId } : {}),
+        });
       } catch (exc) {
         emit("done", {
           error: exc instanceof Error ? exc.message : String(exc),
+          ...(tracer.turnId ? { turnId: tracer.turnId } : {}),
         });
       } finally {
+        // Ensure buffered trace writes (db backend) land before the function freezes.
+        await tracer.flush?.();
         controller.close();
       }
     },

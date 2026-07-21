@@ -72,6 +72,7 @@ export const runLoop = async (opts: {
     result.iterations = iteration;
 
     // ---- reason: one LLM call with the current working memory
+    const llmStart = Date.now();
     let response = null;
     if (canStream && client.stream) {
       try {
@@ -89,6 +90,7 @@ export const runLoop = async (opts: {
       iteration,
       stop_reason: response.stopReason,
       usage: { in: response.usage.input, out: response.usage.output },
+      latency_ms: Date.now() - llmStart,
     });
 
     // the assistant's turn (text and/or tool requests) joins working memory
@@ -111,14 +113,18 @@ export const runLoop = async (opts: {
       // fired BEFORE the tool runs so a gateway can show "using X…" during the
       // wait; the "tool" event below fires after, carrying the result.
       notify("tool_start", { tool: call.name, args: call.input });
-      const output = await executeTool(tools, call.name, call.input);
+      const toolStart = Date.now();
+      // notify is threaded in so tools can emit their own structured events
+      // (e.g. search_docs → a "retrieval" event with scores) mid-execution.
+      const output = await executeTool(tools, call.name, call.input, notify);
       const event: ToolCallEvent = {
         tool: call.name,
         args: call.input,
         output,
       };
       result.toolCalls.push(event);
-      notify("tool", event);
+      // latency rides on the notify payload only — result.toolCalls stays clean.
+      notify("tool", { ...event, latency_ms: Date.now() - toolStart });
       toolResults.push({
         type: "tool_result",
         tool_use_id: call.id,

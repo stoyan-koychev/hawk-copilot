@@ -7,7 +7,9 @@ export type ChatRole = "user" | "assistant";
 // permanently belongs to the turn that produced it.
 export type ChatItem =
   | { kind: "user"; content: string }
-  | { kind: "assistant"; content: string }
+  // turnId (from the SSE `done` event) correlates this reply to its trace row,
+  // so feedback can be attached to it later.
+  | { kind: "assistant"; content: string; turnId?: string }
   | { kind: "card"; tool: string; output: string };
 
 export type HarnessEvent = { turn: number; label: string };
