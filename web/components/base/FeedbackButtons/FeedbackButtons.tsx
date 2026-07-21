@@ -46,7 +46,7 @@ export function FeedbackButtons({ turnId }: { turnId: string }) {
         onClick={() => send(1)}
         className={cn(
           "rounded-md p-1 transition hover:text-primary disabled:hover:text-secondary/50",
-          rated === 1 && "text-accent disabled:text-accent",
+          rated === 1 && "text-primary disabled:text-primary",
         )}
       >
         <Thumb />
@@ -58,7 +58,7 @@ export function FeedbackButtons({ turnId }: { turnId: string }) {
         onClick={() => send(-1)}
         className={cn(
           "rounded-md p-1 transition hover:text-primary disabled:hover:text-secondary/50",
-          rated === -1 && "text-red-500 disabled:text-red-500",
+          rated === -1 && "text-primary disabled:text-primary",
         )}
       >
         <Thumb down />

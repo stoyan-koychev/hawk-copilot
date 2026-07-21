@@ -20,6 +20,14 @@ export const estimateCostUsd = (model: string, tokensIn: number, tokensOut: numb
   return (tokensIn / 1_000_000) * inRate + (tokensOut / 1_000_000) * outRate;
 };
 
+export type TraceEvent = {
+  type: string;
+  ts: string;
+  provider: string | null;
+  model: string | null;
+  data: Record<string, unknown>;
+};
+
 export type TurnRow = {
   turn_id: string;
   started: string | null;
@@ -29,6 +37,8 @@ export type TurnRow = {
   tool_calls: number;
   tokens_in: number;
   tokens_out: number;
+  events: TraceEvent[];
+  rating: number | null; // latest feedback: +1 liked, -1 disliked, null none
 };
 
 export type CostDayRow = { day: string; model: string; tokens_in: number; tokens_out: number };
@@ -73,6 +83,19 @@ GROUP BY 1, 2
 ORDER BY 1 DESC
 LIMIT 30`;
 
+const EVENTS_SQL = `
+SELECT turn_id, type, ts, provider, model, data
+FROM agent_traces
+WHERE turn_id = ANY($1)
+ORDER BY id`;
+
+// Latest rating per turn (a turn may be rated more than once across sessions).
+const FEEDBACK_SQL = `
+SELECT DISTINCT ON (turn_id) turn_id, rating
+FROM agent_feedback
+WHERE turn_id = ANY($1)
+ORDER BY turn_id, ts DESC`;
+
 /** Delete every trace row. Best-effort (no-op if the table doesn't exist). */
 export const purgeTraces = async (pool: DbPool): Promise<void> => {
   try {
@@ -90,8 +113,37 @@ export const fetchDashboard = async (pool: DbPool, turnLimit = 50): Promise<Dash
       pool.query(LATENCY_SQL),
       pool.query(COST_SQL),
     ]);
+
+    // Attach each turn's ordered event log (for the expandable drill-down).
+    const turnRows = turns.rows as TurnRow[];
+    const ids = turnRows.map((t) => t.turn_id);
+    const byTurn = new Map<string, TraceEvent[]>();
+    const ratingByTurn = new Map<string, number>();
+    if (turnRows.length > 0) {
+      const events = await pool.query(EVENTS_SQL, [ids]);
+      for (const row of events.rows as (TraceEvent & { turn_id: string })[]) {
+        const list = byTurn.get(row.turn_id) ?? [];
+        list.push({ type: row.type, ts: row.ts, provider: row.provider, model: row.model, data: row.data });
+        byTurn.set(row.turn_id, list);
+      }
+      // Feedback is a separate table that may not exist yet — guard it on its own
+      // so a missing agent_feedback doesn't blank the whole dashboard.
+      try {
+        const feedback = await pool.query(FEEDBACK_SQL, [ids]);
+        for (const row of feedback.rows as { turn_id: string; rating: number }[]) {
+          ratingByTurn.set(row.turn_id, row.rating);
+        }
+      } catch {
+        // no feedback table / rows yet
+      }
+    }
+
     return {
-      turns: turns.rows as TurnRow[],
+      turns: turnRows.map((turn) => ({
+        ...turn,
+        events: byTurn.get(turn.turn_id) ?? [],
+        rating: ratingByTurn.get(turn.turn_id) ?? null,
+      })),
       latency: (latency.rows[0] as { p50: number | null; p95: number | null }) ?? {
         p50: null,
         p95: null,

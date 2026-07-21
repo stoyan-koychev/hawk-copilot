@@ -18,20 +18,28 @@ describe("estimateCostUsd", () => {
 });
 
 describe("fetchDashboard", () => {
-  it("assembles turns + latency + cost, deriving dollars from tokens", async () => {
+  it("assembles turns + latency + cost + per-turn events, deriving dollars from tokens", async () => {
     const pool = {
       query: vi
         .fn()
-        // TURNS, LATENCY, COST — Promise.all order matches the call order
+        // TURNS, LATENCY, COST run in parallel; the EVENTS query follows.
         .mockResolvedValueOnce({ rows: [{ turn_id: "t1", tokens_in: 10, tokens_out: 5 }] })
         .mockResolvedValueOnce({ rows: [{ p50: 1200, p95: 3400 }] })
         .mockResolvedValueOnce({
           rows: [{ day: "2026-07-21", model: "gpt-4.1-mini", tokens_in: 1_000_000, tokens_out: 0 }],
-        }),
+        })
+        .mockResolvedValueOnce({
+          rows: [{ turn_id: "t1", type: "llm", ts: "t", provider: "openai", model: "m", data: {} }],
+        })
+        // FEEDBACK (latest rating per turn)
+        .mockResolvedValueOnce({ rows: [{ turn_id: "t1", rating: 1 }] }),
     } as unknown as DbPool;
 
     const dashboard = await fetchDashboard(pool, 50);
     expect(dashboard.turns).toHaveLength(1);
+    expect(dashboard.turns[0]?.events).toHaveLength(1);
+    expect(dashboard.turns[0]?.events[0]?.type).toBe("llm");
+    expect(dashboard.turns[0]?.rating).toBe(1);
     expect(dashboard.latency).toEqual({ p50: 1200, p95: 3400 });
     expect(dashboard.costByDay[0]?.cost_usd).toBeCloseTo(0.4, 6);
   });

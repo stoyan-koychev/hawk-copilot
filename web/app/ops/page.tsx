@@ -1,4 +1,5 @@
 import { PurgeTracesButton } from "@/components/blocks/PurgeTracesButton/PurgeTracesButton";
+import { TurnsTable } from "@/components/blocks/TurnsTable/TurnsTable";
 import { getDashboard, opsConfigured } from "@/lib/traces";
 
 export const runtime = "nodejs";
@@ -62,16 +63,7 @@ export default async function OpsPage() {
         <h2 className="mb-2 font-heading text-sm font-semibold text-secondary">
           Recent turns ({turns.length})
         </h2>
-        <Table
-          head={["Started", "Question", "Duration", "Tools", "Tokens (in/out)"]}
-          rows={turns.map((turn) => [
-            turn.started ? new Date(turn.started).toLocaleString() : "—",
-            (turn.question ?? "").slice(0, 80),
-            ms(turn.duration_ms),
-            String(turn.tool_calls),
-            `${turn.tokens_in} / ${turn.tokens_out}`,
-          ])}
-        />
+        <TurnsTable turns={turns} />
       </section>
     </main>
   );
@@ -88,10 +80,10 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function Table({ head, rows }: { head: string[]; rows: string[][] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-secondary/10">
+    <div className="overflow-x-auto rounded-xl border border-secondary/10 bg-white">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="bg-background text-left">
+          <tr className="border-b border-secondary/10 text-left">
             {head.map((cell) => (
               <th key={cell} className="px-3 py-2 font-semibold text-secondary">
                 {cell}
