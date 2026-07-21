@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { AbResults, EvalRun } from "@agent/ops/eval-store";
 import { getEvals, opsConfigured } from "@/lib/traces";
 import { cn } from "@/util/cn";
@@ -39,12 +38,7 @@ export default async function EvalsPage() {
 
   return (
     <main className="mx-auto max-w-5xl space-y-8 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-bold text-primary">Evals &mdash; quality</h1>
-        <Link href="/ops" className="text-sm font-medium text-link hover:text-primary">
-          &lsaquo; Ops
-        </Link>
-      </div>
+      <h1 className="font-heading text-2xl font-bold text-primary">Evals &mdash; quality</h1>
 
       {/* Release gate */}
       <section className="space-y-3">
